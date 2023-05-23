@@ -20,20 +20,20 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Data
 public class Hashtag {
-	
+
 	@Id
 	@GeneratedValue
 	private Integer id;
 
 	private boolean deleted;
-	
+
 	@Column(nullable = false)
 	private String label;
 
 	@Column(nullable = false)
 	@CreationTimestamp
 	private Timestamp firstUsed;
-	
+
 	@Column(nullable = false)
 	@UpdateTimestamp
 	private Timestamp lastUsed;

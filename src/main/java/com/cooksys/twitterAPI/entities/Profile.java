@@ -9,13 +9,13 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Data
 public class Profile {
-	
+
 	private String firstName;
 
-    private String lastName;
+	private String lastName;
 
-    @Column(nullable = false)
-    private String email;
+	@Column(nullable = false)
+	private String email;
 
-    private String phone;
+	private String phone;
 }
