@@ -6,7 +6,6 @@ import lombok.NoArgsConstructor;
 import org.springframework.context.annotation.Profile;
 
 import java.sql.Timestamp;
-import java.util.HashSet;
 import java.util.Set;
 
 @Entity
@@ -29,10 +28,15 @@ public class User {
 
     private boolean deleted;
 
-    @ManyToMany(mappedBy =  "user_likes")
-    private Set<Tweet> likedTweets = new HashSet<>();
+    @ManyToMany
+    @JoinTable(name = "user_likes", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "tweet_id"))
+    private Set<Tweet> likedTweets;
 
-    @ManyToMany(mappedBy = "user_mentions")
-    private Set<Tweet> mentionedTweets = new HashSet<>();
+    @ManyToMany
+    @JoinTable(name = "user_mentions", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "tweet_id"))
+    private Set<Tweet> mentionedTweets;
 
+    @ManyToMany
+    @JoinTable(name = "followers_following", joinColumns = @JoinColumn(name = "follower_id"), inverseJoinColumns = @JoinColumn(name = "following_id"))
+    private Set<User> followers;
 }

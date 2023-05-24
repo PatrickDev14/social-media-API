@@ -3,10 +3,9 @@ package com.cooksys.twitterAPI.dtos;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.CreationTimestamp;
 import org.springframework.context.annotation.Profile;
 
-import java.util.Date;
+import java.sql.Timestamp;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -17,7 +16,6 @@ public class UserResponseDto {
 
     private Profile profile;
 
-    @CreationTimestamp
-    private Date joined;
+    private Timestamp joined;
 
 }

@@ -4,9 +4,8 @@ import jakarta.annotation.Nullable;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.CreationTimestamp;
 
-import java.util.Date;
+import java.sql.Timestamp;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -17,8 +16,7 @@ public class TweetResponseDto {
 
     private UserRequestDto author;
 
-    @CreationTimestamp
-    private Date posted;
+    private Timestamp posted;
 
     private String content;
 
