@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.sql.Timestamp;
+import java.util.Set;
 
 @Entity
 @NoArgsConstructor
@@ -35,4 +36,7 @@ public class Tweet {
     @Nullable
     @ManyToOne
     private Tweet repostOf;
+
+    @ManyToMany
+    private Set<Hashtag> hashtags;
 }
