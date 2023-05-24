@@ -1,4 +1,12 @@
 package com.cooksys.twitterAPI.services.impl;
 
-public class ValidateServiceImpl {
+import org.springframework.stereotype.Service;
+
+import com.cooksys.twitterAPI.services.ValidateService;
+
+import lombok.RequiredArgsConstructor;
+
+@Service
+@RequiredArgsConstructor
+public class ValidateServiceImpl implements ValidateService {
 }

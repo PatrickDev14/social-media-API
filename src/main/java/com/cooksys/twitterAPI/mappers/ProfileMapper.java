@@ -1,4 +1,8 @@
 package com.cooksys.twitterAPI.mappers;
 
-public class ProfileMapper {
+import org.mapstruct.Mapper;
+
+@Mapper(componentModel = "spring")
+public interface ProfileMapper {
+
 }
