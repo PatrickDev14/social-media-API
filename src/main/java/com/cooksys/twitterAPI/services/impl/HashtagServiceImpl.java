@@ -1,4 +1,12 @@
 package com.cooksys.twitterAPI.services.impl;
 
-public class HashtagServiceImpl {
+import org.springframework.stereotype.Service;
+
+import com.cooksys.twitterAPI.services.HashtagService;
+
+import lombok.RequiredArgsConstructor;
+
+@Service
+@RequiredArgsConstructor
+public class HashtagServiceImpl implements HashtagService {
 }

@@ -1,20 +1,16 @@
 package com.cooksys.twitterAPI.dtos;
 
-import lombok.AllArgsConstructor;
+import java.util.List;
+
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
-
 @NoArgsConstructor
-@AllArgsConstructor
 @Data
 public class ContextDto {
 
-    private TweetRequestDto target;
-
-    private TweetRequestDto before;
-
-    private List<TweetRequestDto> after;
+	private TweetResponseDto target;
+    private List<TweetResponseDto> before;
+    private List<TweetResponseDto> after;
 
 }

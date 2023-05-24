@@ -1,14 +1,12 @@
 package com.cooksys.twitterAPI.dtos;
 
 
-import lombok.AllArgsConstructor;
+import java.sql.Timestamp;
+
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.sql.Timestamp;
-
 @NoArgsConstructor
-@AllArgsConstructor
 @Data
 public class HashtagDto {
 

@@ -1,12 +1,22 @@
 package com.cooksys.twitterAPI.entities;
 
-import jakarta.persistence.*;
+import java.sql.Timestamp;
+import java.util.List;
+
+import org.hibernate.annotations.CreationTimestamp;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Embedded;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.context.annotation.Profile;
-
-import java.sql.Timestamp;
-import java.util.Set;
 
 @Entity
 @NoArgsConstructor
@@ -14,7 +24,7 @@ import java.util.Set;
 @Table(name = "user_table")
 public class User {
 
-    @Id
+	@Id
     @GeneratedValue
     private Long id;
 
@@ -23,20 +33,31 @@ public class User {
 
     @Embedded
     private Profile profile;
-
+    
+    @CreationTimestamp
+    @Column(nullable = false)
     private Timestamp joined;
 
-    private boolean deleted;
+    private boolean deleted = false;
+
+    @OneToMany(mappedBy = "author")
+    private List<Tweet> tweets;
 
     @ManyToMany
-    @JoinTable(name = "user_likes", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "tweet_id"))
-    private Set<Tweet> likedTweets;
+    @JoinTable(
+            name = "user_likes",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "tweet_id")
+    )
+    private List<Tweet> likedTweets;
+
+    @ManyToMany(mappedBy = "mentionedUsers")
+    private List<Tweet> mentionedTweets;
 
     @ManyToMany
-    @JoinTable(name = "user_mentions", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "tweet_id"))
-    private Set<Tweet> mentionedTweets;
+    @JoinTable(name = "followers_following")
+    private List<User> followers;
 
-    @ManyToMany
-    @JoinTable(name = "followers_following", joinColumns = @JoinColumn(name = "follower_id"), inverseJoinColumns = @JoinColumn(name = "following_id"))
-    private Set<User> followers;
+    @ManyToMany(mappedBy = "followers")
+    private List<User> following;
 }
