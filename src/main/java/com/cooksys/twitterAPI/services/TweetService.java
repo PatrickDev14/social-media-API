@@ -12,4 +12,10 @@ public interface TweetService {
     List<TweetResponseDto> getReposts(Long id);
 
     List<UserResponseDto> getMentions(Long id);
+
+    List<TweetResponseDto> getAllSavedTweets();
+
+    TweetResponseDto getTweet(Long id);
+
+    TweetResponseDto createTweet(TweetRequestDto tweetRequestDtoDto);
 }
