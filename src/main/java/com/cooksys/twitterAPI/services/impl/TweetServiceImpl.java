@@ -177,7 +177,6 @@ public class TweetServiceImpl implements TweetService {
     public List<HashtagDto> getHashtags(Long id) {
         return hashtagMapper.entitiesToDtos(getTweetById(id).getHashtags());
     }
-git
 
     //REPOST TWEET
     @Override
