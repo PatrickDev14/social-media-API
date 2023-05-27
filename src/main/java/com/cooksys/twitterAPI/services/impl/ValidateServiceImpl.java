@@ -1,13 +1,12 @@
 package com.cooksys.twitterAPI.services.impl;
 
 import com.cooksys.twitterAPI.entities.User;
+import com.cooksys.twitterAPI.repositories.HashtagRepository;
 import com.cooksys.twitterAPI.repositories.UserRepository;
+import com.cooksys.twitterAPI.services.ValidateService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import com.cooksys.twitterAPI.services.ValidateService;
-
-import lombok.RequiredArgsConstructor;
 
 import java.util.Optional;
 
@@ -17,6 +16,8 @@ public class ValidateServiceImpl implements ValidateService {
 
     @Autowired
     private UserRepository userRepository;
+
+    private HashtagRepository hashtagRepository;
 
     //CHECK IF USERNAME EXISTS
     @Override
@@ -35,5 +36,11 @@ public class ValidateServiceImpl implements ValidateService {
         } else {
             return true;
         }
+    }
+
+    // VALIDATE IF HASHTAG EXISTS
+    @Override
+    public Boolean hashtagExists(String label) {
+        return hashtagRepository.findHashtagByLabel(label).isPresent();
     }
 }

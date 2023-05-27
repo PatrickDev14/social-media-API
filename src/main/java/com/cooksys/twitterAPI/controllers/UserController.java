@@ -2,6 +2,7 @@ package com.cooksys.twitterAPI.controllers;
 
 import com.cooksys.twitterAPI.dtos.CredentialsDto;
 import com.cooksys.twitterAPI.dtos.TweetResponseDto;
+import com.cooksys.twitterAPI.dtos.UserRequestDto;
 import com.cooksys.twitterAPI.dtos.UserResponseDto;
 import com.cooksys.twitterAPI.services.UserService;
 import lombok.RequiredArgsConstructor;
@@ -41,4 +42,22 @@ public class UserController {
     public List<TweetResponseDto> getFeed(@PathVariable String username) {
         return userService.getFeed(username);
     }
+
+    @PostMapping
+    public UserResponseDto createOrReactivateUser(@RequestBody UserRequestDto userRequestDto) {
+        return userService.createOrReactivateUser(userRequestDto);
+    }
+
+    // GET - FOLLOWERS BY USERNAME
+    @GetMapping("/@{username}/followers")
+    public List<UserResponseDto> getActiveFollowers(@PathVariable String username) {
+        return userService.getActiveFollowers(username);
+    }
+
+    // GET - FOLLOWING BY USERNAME
+    @GetMapping("/@{username}/following")
+    public List<UserResponseDto> getActiveFollowing(@PathVariable String username) {
+        return userService.getActiveFollowing(username);
+    }
+
 }

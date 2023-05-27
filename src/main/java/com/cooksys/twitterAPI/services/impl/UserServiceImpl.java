@@ -2,6 +2,7 @@ package com.cooksys.twitterAPI.services.impl;
 
 import com.cooksys.twitterAPI.dtos.CredentialsDto;
 import com.cooksys.twitterAPI.dtos.TweetResponseDto;
+import com.cooksys.twitterAPI.dtos.UserRequestDto;
 import com.cooksys.twitterAPI.dtos.UserResponseDto;
 import com.cooksys.twitterAPI.entities.Tweet;
 import com.cooksys.twitterAPI.entities.User;
@@ -20,6 +21,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -137,5 +139,77 @@ public class UserServiceImpl implements UserService {
         }
         return feedReversed;
     }
+
+    public User getCredentialedUser(UserRequestDto userRequestDto) {
+        User validatingUser = userMapper.requestDtoToEntity(userRequestDto);
+        String validatingUsername = validatingUser.getCredentials().getUsername();
+        String validatingPassword = validatingUser.getCredentials().getPassword();
+        for (User u : userRepository.findAll()) {
+            if (Objects.equals(u.getCredentials().getUsername(), validatingUsername)
+                    && Objects.equals(u.getCredentials().getPassword(), validatingPassword)) {
+
+                return u;
+            }
+        }
+
+        return null;
+    }
+
+    @Override
+    public UserResponseDto createOrReactivateUser(UserRequestDto userRequestDto) {
+        if (userRequestDto.getCredentials().getUsername() == null) {
+            throw new BadRequestException("a username is required");
+        }
+        if (userRequestDto.getCredentials().getPassword() == null) {
+            throw new BadRequestException("a password is required");
+        }
+        if (userRequestDto.getProfile().getEmail() == null) {
+            throw new BadRequestException("an email is required");
+        }
+        if (userRequestDto.getCredentials() == null) {
+            throw new BadRequestException("credentials are required");
+        }
+
+        User userToCreateOrReactivate;
+        userToCreateOrReactivate = getCredentialedUser(userRequestDto);
+        // user already exists
+        if (userToCreateOrReactivate != null) {
+            // reactivate a user who isDeleted()
+            if (userToCreateOrReactivate.isDeleted()) {
+                userToCreateOrReactivate.setDeleted(false);
+            } else {
+                //user has an active account already
+                throw new BadRequestException("user has an active account");
+            }
+        } else {
+            //user doesn't exist yet
+            userToCreateOrReactivate = userMapper.requestDtoToEntity(userRequestDto);
+        }
+
+        return userMapper.entityToDto(userRepository.saveAndFlush(userToCreateOrReactivate));
+    }
+
+    @Override
+    public List<UserResponseDto> getActiveFollowers(String username) {
+        //examine this vs getUserEntity
+//        if (!validateServiceImpl.usernameExists(username)) {
+//            throw new NotFoundException("User not found with username: " + username);
+//        }
+        User user = getUserEntity(username);
+        List<User> followers = user.getFollowers();
+        followers.removeIf(User::isDeleted);
+
+        return userMapper.entitiesToDtos(followers);
+    }
+
+    @Override
+    public List<UserResponseDto> getActiveFollowing(String username) {
+        User user = getUserEntity(username);
+        List<User> following = user.getFollowing();
+        following.removeIf(User::isDeleted);
+
+        return userMapper.entitiesToDtos(following);
+    }
+
 
 }

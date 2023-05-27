@@ -7,4 +7,6 @@ public interface ValidateService {
 
     //VALIDATE IF USERNAME IS AVAILABLE
     Boolean usernameAvailable(String username);
+
+    Boolean hashtagExists(String label);
 }

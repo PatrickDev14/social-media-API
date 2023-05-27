@@ -9,22 +9,19 @@ import com.cooksys.twitterAPI.entities.User;
 import com.cooksys.twitterAPI.exceptions.BadRequestException;
 import com.cooksys.twitterAPI.exceptions.NotFoundException;
 import com.cooksys.twitterAPI.mappers.CredentialsMapper;
+import com.cooksys.twitterAPI.mappers.TweetMapper;
 import com.cooksys.twitterAPI.mappers.UserMapper;
+import com.cooksys.twitterAPI.repositories.TweetRepository;
 import com.cooksys.twitterAPI.repositories.UserRepository;
+import com.cooksys.twitterAPI.services.TweetService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.cooksys.twitterAPI.mappers.TweetMapper;
-import com.cooksys.twitterAPI.repositories.TweetRepository;
-import com.cooksys.twitterAPI.services.TweetService;
-
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-
-import java.util.Comparator;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
@@ -149,18 +146,19 @@ public class TweetServiceImpl implements TweetService {
      */
     @Override
     public TweetResponseDto createTweet(TweetRequestDto tweetRequestDto) {
-        String username = tweetRequestDto.getCredentials().getUsername();
-        //  Optional<Credential> to make sure they're not null
-//        if(!validateService.usernameExists(username)
-//          && tweetRequestDto.getCredentials().getPassword == ) {
-//            throw new NotFoundException("username was not found.");
-//        }
-
-        Tweet tweetToCreate = tweetMapper.requestDtoToEntity(tweetRequestDto);
-//        tweetToCreate.setAuthor(tweetRequestDto.getCredentials().getUsername());
-        if (tweetToCreate.getContent().isEmpty()) {
+        if (tweetRequestDto.getContent().isEmpty()) {
             throw new BadRequestException("A new tweet requires content");
         }
+
+        Credentials credentials = credentialsMapper.dtoToEntity(tweetRequestDto.getCredentials());
+        Optional<User> optionalUser = userRepository.findByCredentialsAndDeletedFalse(credentials);
+        if (optionalUser.isEmpty()) {
+            throw new BadRequestException("the request is not from a valid user");
+        }
+
+        User validUser = optionalUser.get();
+        Tweet tweetToCreate = tweetMapper.requestDtoToEntity(tweetRequestDto);
+        tweetToCreate.setAuthor(validUser);
 
         return tweetMapper.entityToDto(tweetRepository.saveAndFlush(tweetToCreate));
     }
