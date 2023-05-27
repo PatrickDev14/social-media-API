@@ -1,5 +1,7 @@
 package com.cooksys.twitterAPI.services.impl;
 
+import com.cooksys.twitterAPI.dtos.ContextDto;
+import com.cooksys.twitterAPI.dtos.HashtagDto;
 import com.cooksys.twitterAPI.dtos.TweetRequestDto;
 import com.cooksys.twitterAPI.dtos.TweetResponseDto;
 import com.cooksys.twitterAPI.dtos.UserResponseDto;
@@ -9,6 +11,7 @@ import com.cooksys.twitterAPI.entities.User;
 import com.cooksys.twitterAPI.exceptions.BadRequestException;
 import com.cooksys.twitterAPI.exceptions.NotFoundException;
 import com.cooksys.twitterAPI.mappers.CredentialsMapper;
+import com.cooksys.twitterAPI.mappers.HashtagMapper;
 import com.cooksys.twitterAPI.mappers.TweetMapper;
 import com.cooksys.twitterAPI.mappers.UserMapper;
 import com.cooksys.twitterAPI.repositories.TweetRepository;
@@ -39,6 +42,8 @@ public class TweetServiceImpl implements TweetService {
     private CredentialsMapper credentialsMapper;
     @Autowired
     private UserMapper userMapper;
+    @Autowired
+    private HashtagMapper hashtagMapper;
 
     //HELPER METHOD TO GET USER MY CREDENTIALS
     private User getUserByCredentials(Credentials credentials) {
@@ -124,8 +129,8 @@ public class TweetServiceImpl implements TweetService {
     /* GET tweets/{id}
      *  Retrieves a tweet with a given id. If no such tweet exists, or the given tweet is deleted, an error should be sent
      * in lieu of a response.
-     */
-
+     */  
+ 
     @Override
     public TweetResponseDto getTweet(Long id) {
         Optional<Tweet> potentialTweet = tweetRepository.findById(id);
@@ -135,6 +140,71 @@ public class TweetServiceImpl implements TweetService {
 
         return tweetMapper.entityToDto(potentialTweet.get());
     }
+    
+ // GET REPLIES
+ 	@Override
+ 	public List<TweetResponseDto> getReplies(Long id) {
+ 		Tweet tweet = getTweetById(id);
+ 		List<Tweet> result = new ArrayList<>();
+ 		for (Tweet reply : tweet.getReplies()) {
+ 			if (!reply.isDeleted()) {
+ 				result.add(reply);
+ 			}
+ 		}
+ 		return tweetMapper.entitiesToDtos(result);
+ 	}
+
+ 	// GET NEXT TWEET
+ 	private List<Tweet> getNextTweet(Tweet reply, List<Tweet> after) {
+ 		if (!reply.isDeleted()) {
+ 			after.add(reply);
+ 		}
+ 		if (reply.getReplies() != null) {
+ 			for (Tweet replyToReply : reply.getReplies()) {
+ 				getNextTweet(replyToReply, after);
+ 			}
+ 		}
+ 		return after;
+ 	}
+
+ 	// GET CONTEXT
+ 	@Override
+ 	public ContextDto getContext(Long id) {
+ 		Tweet target = getTweetById(id);
+
+ 		ContextDto context = new ContextDto();
+ 		context.setTarget(tweetMapper.entityToDto(target));
+
+ 		List<Tweet> after = new ArrayList<>();
+ 		for (Tweet reply : target.getReplies()) {
+ 			getNextTweet(reply, after);
+ 		}
+ 		context.setAfter(tweetMapper.entitiesToDtos(after));
+
+ 		List<Tweet> before = new ArrayList<>();
+ 		while (target.getInReplyTo() != null) {
+ 			if (target.getInReplyTo().isDeleted() == false) {
+ 				before.add(target.getInReplyTo());
+ 			}
+ 			target = target.getInReplyTo();
+ 		}
+ 		context.setBefore(tweetMapper.entitiesToDtos(before));
+
+ 		return context;
+ 	}
+
+ 	// GET LIKES
+ 	@Override
+ 	public List<UserResponseDto> getLikes(Long id) {
+ 		List<User> tweetLikes = getTweetById(id).getLikedByUsers();
+ 		return userMapper.entitiesToDtos(tweetLikes);
+ 	}
+
+ 	// GET TWEET TAGS
+ 	@Override
+ 	public List<HashtagDto> getTweetTags(Long id) {
+ 		return hashtagMapper.entitiesToDtos(getTweetById(id).getHashtags());
+ 	}
 
     /* POST tweets
      * Creates a new simple tweet, with the author set to the user identified by the credentials in the request body.

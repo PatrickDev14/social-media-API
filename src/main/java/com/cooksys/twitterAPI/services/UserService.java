@@ -8,17 +8,25 @@ import com.cooksys.twitterAPI.dtos.UserResponseDto;
 import java.util.List;
 
 public interface UserService {
-    List<UserResponseDto> getAllUsers();
+	List<UserResponseDto> getAllUsers();
 
-    void followUser(CredentialsDto credentialsDto, String username);
+	void followUser(CredentialsDto credentialsDto, String username);
 
-    void unfollowUser(CredentialsDto credentialsDto, String username);
+	void unfollowUser(CredentialsDto credentialsDto, String username);
 
-    List<TweetResponseDto> getFeed(String username);
+	List<TweetResponseDto> getFeed(String username);
 
-    UserResponseDto createOrReactivateUser(UserRequestDto userRequestDto);
+	List<TweetResponseDto> getUserMentions(String username);
 
-    List<UserResponseDto> getActiveFollowers(String username);
+	UserResponseDto deleteUser(String username, CredentialsDto credentialsDto);
 
-    List<UserResponseDto> getActiveFollowing(String username);
+	UserResponseDto updateUser(String username, UserRequestDto userRequestDto);
+
+	UserResponseDto getUserByUsername(String username);
+
+	UserResponseDto createOrReactivateUser(UserRequestDto userRequestDto);
+
+	List<UserResponseDto> getActiveFollowers(String username);
+
+	List<UserResponseDto> getActiveFollowing(String username);
 }
