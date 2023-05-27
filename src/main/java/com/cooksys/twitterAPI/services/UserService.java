@@ -4,13 +4,15 @@ import com.cooksys.twitterAPI.dtos.CredentialsDto;
 import com.cooksys.twitterAPI.dtos.TweetResponseDto;
 import com.cooksys.twitterAPI.dtos.UserRequestDto;
 import com.cooksys.twitterAPI.dtos.UserResponseDto;
+import com.cooksys.twitterAPI.exceptions.BadRequestException;
+import com.cooksys.twitterAPI.exceptions.NotAuthorizedException;
 
 import java.util.List;
 
 public interface UserService {
 	List<UserResponseDto> getAllUsers();
 
-	void followUser(CredentialsDto credentialsDto, String username);
+	void followUser(CredentialsDto credentialsDto, String username) throws NotAuthorizedException, BadRequestException;
 
 	void unfollowUser(CredentialsDto credentialsDto, String username);
 
