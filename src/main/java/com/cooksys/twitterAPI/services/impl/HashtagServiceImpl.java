@@ -34,7 +34,7 @@ public class HashtagServiceImpl implements HashtagService {
 
 	// GET ALL HASHTAGS
 	@Override
-	public List<HashtagDto> getAllHashtags() {
+	public List<HashtagDto> getAllTweetsByHashtag() {
 		List<Hashtag> hashtags = hashtagRepository.findAll();
 		return hashtagMapper.entitiesToDtos(hashtags);
 	}

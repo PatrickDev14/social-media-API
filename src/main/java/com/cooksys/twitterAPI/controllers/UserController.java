@@ -60,4 +60,27 @@ public class UserController {
         return userService.getActiveFollowing(username);
     }
 
+    // GET USER MENTIONS
+    @GetMapping("/@{username}/mentions")
+    public List<TweetResponseDto> getMentions(@PathVariable String username) {
+        return userService.getUserMentions(username);
+    }
+
+    // DELETE A USER
+    @DeleteMapping("/@{username}")
+    public UserResponseDto deleteUser(@RequestBody CredentialsDto credentialsDto, @PathVariable String username) {
+        return userService.deleteUser(username, credentialsDto);
+    }
+
+    //UPDATE USER
+    @PatchMapping("/@{username}")
+    public UserResponseDto updateUser(@RequestBody UserRequestDto userDto, @PathVariable String username) {
+        return userService.updateUser(username, userDto);
+    }
+
+    //GET USER BY USERNAME
+    @GetMapping("/@{username}")
+    public UserResponseDto getUserByUsername(@PathVariable String username) {
+        return userService.getUserByUsername(username);
+    }
 }

@@ -1,5 +1,6 @@
 package com.cooksys.twitterAPI.controllers;
 
+import com.cooksys.twitterAPI.dtos.HashtagDto;
 import com.cooksys.twitterAPI.dtos.TweetRequestDto;
 import com.cooksys.twitterAPI.dtos.TweetResponseDto;
 import com.cooksys.twitterAPI.dtos.UserResponseDto;
@@ -52,5 +53,17 @@ public class TweetController {
     @ResponseStatus(HttpStatus.CREATED)
     public TweetResponseDto createTweet(@RequestBody TweetRequestDto tweetRequestDto) {
         return tweetService.createTweet(tweetRequestDto);
+    }
+
+    //GET TWEET LIKES
+    @GetMapping("/{id}/likes")
+    public List<UserResponseDto> getLikes(@PathVariable Long id) {
+        return tweetService.getLikes(id);
+    }
+
+    //GET TWEETS BY TAGS
+    @GetMapping("/{id}/tags")
+    public List<HashtagDto> getHashtags(@PathVariable Long id) {
+        return tweetService.getHashtags(id);
     }
 }
