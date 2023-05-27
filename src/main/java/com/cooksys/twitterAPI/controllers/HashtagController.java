@@ -1,5 +1,6 @@
 package com.cooksys.twitterAPI.controllers;
 
+import com.cooksys.twitterAPI.dtos.HashtagDto;
 import com.cooksys.twitterAPI.dtos.TweetResponseDto;
 import com.cooksys.twitterAPI.services.HashtagService;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -22,5 +23,10 @@ public class HashtagController {
     @GetMapping("/{label}")
     public List<TweetResponseDto> getAllTweetsByHashtag(@PathVariable String label) {
         return hashtagService.getAllTweetsByHashtag(label);
+    }
+
+    @GetMapping
+    public List<HashtagDto> getAllHashtags() {
+        return hashtagService.getAllHashtags();
     }
 }

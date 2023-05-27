@@ -1,10 +1,6 @@
 package com.cooksys.twitterAPI.services.impl;
 
-import com.cooksys.twitterAPI.dtos.ContextDto;
-import com.cooksys.twitterAPI.dtos.HashtagDto;
-import com.cooksys.twitterAPI.dtos.TweetRequestDto;
-import com.cooksys.twitterAPI.dtos.TweetResponseDto;
-import com.cooksys.twitterAPI.dtos.UserResponseDto;
+import com.cooksys.twitterAPI.dtos.*;
 import com.cooksys.twitterAPI.entities.Credentials;
 import com.cooksys.twitterAPI.entities.Tweet;
 import com.cooksys.twitterAPI.entities.User;
@@ -117,6 +113,89 @@ public class TweetServiceImpl implements TweetService {
         return allMentions;
     }
 
+    // GET REPLIES
+    @Override
+    public List<TweetResponseDto> getReplies(Long id) {
+        Tweet tweet = getTweetById(id);
+        List<Tweet> result = new ArrayList<>();
+        for (Tweet reply : tweet.getReplies()) {
+            if (!reply.isDeleted()) {
+                result.add(reply);
+            }
+        }
+        return tweetMapper.entitiesToDtos(result);
+    }
+
+    // GET NEXT TWEET
+    private List<Tweet> getNextTweet(Tweet reply, List<Tweet> after) {
+        if (!reply.isDeleted()) {
+            after.add(reply);
+        }
+        if (reply.getReplies() != null) {
+            for (Tweet replyToReply : reply.getReplies()) {
+                getNextTweet(replyToReply, after);
+            }
+        }
+        return after;
+    }
+
+    // GET CONTEXT
+    @Override
+    public ContextDto getContext(Long id) {
+        Tweet target = getTweetById(id);
+
+        ContextDto context = new ContextDto();
+        context.setTarget(tweetMapper.entityToDto(target));
+
+        List<Tweet> after = new ArrayList<>();
+        for (Tweet reply : target.getReplies()) {
+            getNextTweet(reply, after);
+        }
+        context.setAfter(tweetMapper.entitiesToDtos(after));
+
+        List<Tweet> before = new ArrayList<>();
+        while (target.getInReplyTo() != null) {
+            if (target.getInReplyTo().isDeleted() == false) {
+                before.add(target.getInReplyTo());
+            }
+            target = target.getInReplyTo();
+        }
+        context.setBefore(tweetMapper.entitiesToDtos(before));
+
+        return context;
+    }
+
+    // GET LIKES
+    @Override
+    public List<UserResponseDto> getLikes(Long id) {
+        List<User> tweetLikes = getTweetById(id).getLikedByUsers();
+        return userMapper.entitiesToDtos(tweetLikes);
+    }
+
+    // GET TWEET TAGS
+    @Override
+    public List<HashtagDto> getHashtags(Long id) {
+        return hashtagMapper.entitiesToDtos(getTweetById(id).getHashtags());
+    }
+git
+
+    //REPOST TWEET
+    @Override
+    public TweetResponseDto repostTweet(CredentialsDto credentialsDto, Long id) {
+
+        Tweet target = getTweetById(id);
+
+        User author = getUserByCredentials(credentialsMapper.dtoToEntity(credentialsDto));
+        Tweet repost = new Tweet();
+        repost.setAuthor(author);
+        repost.setPosted(Timestamp.from(Instant.now()));
+        repost.setDeleted(false);
+        repost.setContent(null);
+        repost.setRepostOf(target);
+        return tweetMapper.entityToDto(tweetRepository.saveAndFlush(repost));
+    }
+
+
     @Override
     public List<TweetResponseDto> getAllSavedTweets() {
         List<Tweet> foundTweets = tweetRepository.findAll();
@@ -140,80 +219,7 @@ public class TweetServiceImpl implements TweetService {
 
         return tweetMapper.entityToDto(potentialTweet.get());
     }
-    
- // GET REPLIES
- 	@Override
- 	public List<TweetResponseDto> getReplies(Long id) {
- 		Tweet tweet = getTweetById(id);
- 		List<Tweet> result = new ArrayList<>();
- 		for (Tweet reply : tweet.getReplies()) {
- 			if (!reply.isDeleted()) {
- 				result.add(reply);
- 			}
- 		}
- 		return tweetMapper.entitiesToDtos(result);
- 	}
 
- 	// GET NEXT TWEET
- 	private List<Tweet> getNextTweet(Tweet reply, List<Tweet> after) {
- 		if (!reply.isDeleted()) {
- 			after.add(reply);
- 		}
- 		if (reply.getReplies() != null) {
- 			for (Tweet replyToReply : reply.getReplies()) {
- 				getNextTweet(replyToReply, after);
- 			}
- 		}
- 		return after;
- 	}
-
- 	// GET CONTEXT
- 	@Override
- 	public ContextDto getContext(Long id) {
- 		Tweet target = getTweetById(id);
-
- 		ContextDto context = new ContextDto();
- 		context.setTarget(tweetMapper.entityToDto(target));
-
- 		List<Tweet> after = new ArrayList<>();
- 		for (Tweet reply : target.getReplies()) {
- 			getNextTweet(reply, after);
- 		}
- 		context.setAfter(tweetMapper.entitiesToDtos(after));
-
- 		List<Tweet> before = new ArrayList<>();
- 		while (target.getInReplyTo() != null) {
- 			if (target.getInReplyTo().isDeleted() == false) {
- 				before.add(target.getInReplyTo());
- 			}
- 			target = target.getInReplyTo();
- 		}
- 		context.setBefore(tweetMapper.entitiesToDtos(before));
-
- 		return context;
- 	}
-
- 	// GET LIKES
- 	@Override
- 	public List<UserResponseDto> getLikes(Long id) {
- 		List<User> tweetLikes = getTweetById(id).getLikedByUsers();
- 		return userMapper.entitiesToDtos(tweetLikes);
- 	}
-
- 	// GET TWEET TAGS
- 	@Override
- 	public List<HashtagDto> getHashtags(Long id) {
- 		return hashtagMapper.entitiesToDtos(getTweetById(id).getHashtags());
- 	}
-
-    /* POST tweets
-     * Creates a new simple tweet, with the author set to the user identified by the credentials in the request body.
-     * If the given credentials do not match an active user in the database, an error should be sent in lieu of a response.
-     * The response should contain the newly-created tweet.
-     * Because this always creates a simple tweet, it must have a content property and may not have inReplyTo or repostOf properties.
-     * IMPORTANT: when a tweet with content is created, the server must process the tweet's content for @{username} mentions
-     * and #{hashtag} tags. There is no way to create hashtags or create mentions from the API, so this must be handled automatically!
-     */
     @Override
     public TweetResponseDto createTweet(TweetRequestDto tweetRequestDto) {
         if (tweetRequestDto.getContent().isEmpty()) {
@@ -233,8 +239,4 @@ public class TweetServiceImpl implements TweetService {
         return tweetMapper.entityToDto(tweetRepository.saveAndFlush(tweetToCreate));
     }
 
-
-    // Creates a "like" relationship between the tweet with the given id and the user whose credentials are provided by the request body.
-    // If the tweet is deleted or otherwise doesn't exist, or if the given credentials do not match an active user in the database,
-    // an error should be sent. Following successful completion of the operation, no response body is sent.
 }

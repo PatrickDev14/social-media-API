@@ -1,10 +1,6 @@
 package com.cooksys.twitterAPI.services;
 
-import com.cooksys.twitterAPI.dtos.ContextDto;
-import com.cooksys.twitterAPI.dtos.HashtagDto;
-import com.cooksys.twitterAPI.dtos.TweetRequestDto;
-import com.cooksys.twitterAPI.dtos.TweetResponseDto;
-import com.cooksys.twitterAPI.dtos.UserResponseDto;
+import com.cooksys.twitterAPI.dtos.*;
 
 import java.util.List;
 
@@ -16,6 +12,8 @@ public interface TweetService {
 	List<UserResponseDto> getMentions(Long id);
 
 	List<TweetResponseDto> getReplies(Long id);
+
+	TweetResponseDto repostTweet(CredentialsDto credentialsDto, Long id);
 
 	ContextDto getContext(Long id);
 
