@@ -21,7 +21,7 @@ public interface TweetService {
 
 	List<UserResponseDto> getLikes(Long id);
 
-	List<HashtagDto> getTweetTags(Long id);
+	List<HashtagDto> getHashtags(Long id);
 
 	TweetResponseDto createTweet(TweetRequestDto tweetRequestDto);
 
