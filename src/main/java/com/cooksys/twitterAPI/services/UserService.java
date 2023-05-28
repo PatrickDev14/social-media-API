@@ -22,6 +22,10 @@ public interface UserService {
 
 	UserResponseDto deleteUser(String username, CredentialsDto credentialsDto);
 
+  List<UserResponseDto> getActiveFollowing(String username);
+
+  List<TweetResponseDto> getTweetsMentioningUsername(String username);
+
 	UserResponseDto updateUser(String username, UserRequestDto userRequestDto);
 
 	UserResponseDto getUserByUsername(String username);

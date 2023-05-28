@@ -19,10 +19,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -138,6 +135,59 @@ public class UserServiceImpl implements UserService {
 		}
 		return feedReversed;
 	}
+  
+  public User getCredentialedUser(UserRequestDto userRequestDto) {
+      User validatingUser = userMapper.requestDtoToEntity(userRequestDto);
+      String validatingUsername = validatingUser.getCredentials().getUsername();
+      String validatingPassword = validatingUser.getCredentials().getPassword();
+      for (User u : userRepository.findAll()) {
+          if (Objects.equals(u.getCredentials().getUsername(), validatingUsername)
+                  && Objects.equals(u.getCredentials().getPassword(), validatingPassword)) {
+
+              return u;
+          }
+      }
+
+      return null;
+  }
+
+  @Override
+  public UserResponseDto createOrReactivateUser(UserRequestDto userRequestDto) {
+
+      if (userRequestDto.getCredentials() == null && userRequestDto.getProfile() == null) {
+          throw new BadRequestException("the user request is empty");
+      }
+      if (userRequestDto.getCredentials() == null || userRequestDto.getProfile() == null) {
+          throw new BadRequestException("the user request is incomplete");
+      }
+      if (userRequestDto.getCredentials().getUsername() == null) {
+          throw new BadRequestException("a username is required");
+      }
+      if (userRequestDto.getCredentials().getPassword() == null) {
+          throw new BadRequestException("a password is required");
+      }
+      if (userRequestDto.getProfile().getEmail() == null) {
+          throw new BadRequestException("an email is required");
+      }
+
+      User userToCreateOrReactivate;
+      userToCreateOrReactivate = getCredentialedUser(userRequestDto);
+      // user already exists
+      if (userToCreateOrReactivate != null) {
+          // reactivate a user who isDeleted()
+          if (userToCreateOrReactivate.isDeleted()) {
+              userToCreateOrReactivate.setDeleted(false);
+          } else {
+              //user has an active account already
+              throw new BadRequestException("user has an active account");
+          }
+      } else {
+          //user doesn't exist yet
+          userToCreateOrReactivate = userMapper.requestDtoToEntity(userRequestDto);
+      }
+
+      return userMapper.entityToDto(userRepository.saveAndFlush(userToCreateOrReactivate));
+  }
 
 	// GET - USER MENTIONS
 	@Override
@@ -192,58 +242,7 @@ public class UserServiceImpl implements UserService {
 		UserResponseDto userDto = userMapper.entityToDto(getUserEntity(username));
 		userDto.setUsername(name);
 		return userDto;
-	}
-
-	
-
-	public User getCredentialedUser(UserRequestDto userRequestDto) {
-		User validatingUser = userMapper.requestDtoToEntity(userRequestDto);
-		String validatingUsername = validatingUser.getCredentials().getUsername();
-		String validatingPassword = validatingUser.getCredentials().getPassword();
-		for (User u : userRepository.findAll()) {
-			if (Objects.equals(u.getCredentials().getUsername(), validatingUsername)
-					&& Objects.equals(u.getCredentials().getPassword(), validatingPassword)) {
-
-				return u;
-			}
-		}
-
-		return null;
-	}
-
-	@Override
-	public UserResponseDto createOrReactivateUser(UserRequestDto userRequestDto) {
-		if (userRequestDto.getCredentials().getUsername() == null) {
-			throw new BadRequestException("a username is required");
-		}
-		if (userRequestDto.getCredentials().getPassword() == null) {
-			throw new BadRequestException("a password is required");
-		}
-		if (userRequestDto.getProfile().getEmail() == null) {
-			throw new BadRequestException("an email is required");
-		}
-		if (userRequestDto.getCredentials() == null) {
-			throw new BadRequestException("credentials are required");
-		}
-
-		User userToCreateOrReactivate;
-		userToCreateOrReactivate = getCredentialedUser(userRequestDto);
-		// user already exists
-		if (userToCreateOrReactivate != null) {
-			// reactivate a user who isDeleted()
-			if (userToCreateOrReactivate.isDeleted()) {
-				userToCreateOrReactivate.setDeleted(false);
-			} else {
-				// user has an active account already
-				throw new BadRequestException("user has an active account");
-			}
-		} else {
-			// user doesn't exist yet
-			userToCreateOrReactivate = userMapper.requestDtoToEntity(userRequestDto);
-		}
-
-		return userMapper.entityToDto(userRepository.saveAndFlush(userToCreateOrReactivate));
-	}
+	}	
 
 	@Override
 	public List<UserResponseDto> getActiveFollowers(String username) {
@@ -255,6 +254,7 @@ public class UserServiceImpl implements UserService {
 		List<User> followers = user.getFollowers();
 		followers.removeIf(User::isDeleted);
 
+
 		return userMapper.entitiesToDtos(followers);
 	}
 
@@ -263,8 +263,19 @@ public class UserServiceImpl implements UserService {
 		User user = getUserEntity(username);
 		List<User> following = user.getFollowing();
 		following.removeIf(User::isDeleted);
-
-		return userMapper.entitiesToDtos(following);
+    
+    return userMapper.entitiesToDtos(following);
 	}
+
+
+  @Override
+  public List<TweetResponseDto> getTweetsMentioningUsername(String username) {
+      User user = getUserEntity(username);
+      List<Tweet> mentioningTweets = new ArrayList<>(user.getMentionedTweets());
+      mentioningTweets.removeIf(Tweet::isDeleted);
+      mentioningTweets.sort(Comparator.comparing(Tweet::getPosted, Comparator.reverseOrder()));
+
+      return tweetMapper.entitiesToDtos(mentioningTweets);
+  }
 
 }

@@ -52,6 +52,18 @@ public class TweetController {
         return tweetService.createTweet(tweetRequestDto);
     }
 
+    // POST - CREATE A TWEET LIKE
+    @PostMapping("/{id}/like")
+    public void createATweetLike(@PathVariable Long id, @RequestBody CredentialsDto credentialsDto) {
+        tweetService.createATweetLike(id, credentialsDto);
+    }
+
+    // DELETE - TWEET BY ID
+    @DeleteMapping("/{id}")
+    public TweetResponseDto softDeleteTweet(@PathVariable Long id, @RequestBody CredentialsDto credentialsDto) {
+        return tweetService.softDeleteTweet(id, credentialsDto);
+    }
+  
     //GET TWEET LIKES
     @GetMapping("/{id}/likes")
     public List<UserResponseDto> getLikes(@PathVariable Long id) {

@@ -60,6 +60,12 @@ public class UserController {
         return userService.getActiveFollowing(username);
     }
 
+    // GET - TWEETS THAT MENTION USERNAME
+    @GetMapping("/@{username}/mentions")
+    public List<TweetResponseDto> getTweetsMentioningUsername(@PathVariable String username) {
+        return userService.getTweetsMentioningUsername(username);
+    }
+
     // GET USER MENTIONS
     @GetMapping("/@{username}/mentions")
     public List<TweetResponseDto> getMentions(@PathVariable String username) {
@@ -83,4 +89,5 @@ public class UserController {
     public UserResponseDto getUserByUsername(@PathVariable String username) {
         return userService.getUserByUsername(username);
     }
+
 }
