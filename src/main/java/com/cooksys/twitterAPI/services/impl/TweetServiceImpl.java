@@ -2,6 +2,7 @@ package com.cooksys.twitterAPI.services.impl;
 
 import com.cooksys.twitterAPI.dtos.*;
 import com.cooksys.twitterAPI.entities.Credentials;
+import com.cooksys.twitterAPI.entities.Hashtag;
 import com.cooksys.twitterAPI.entities.Tweet;
 import com.cooksys.twitterAPI.entities.User;
 import com.cooksys.twitterAPI.exceptions.BadRequestException;
@@ -10,6 +11,7 @@ import com.cooksys.twitterAPI.mappers.CredentialsMapper;
 import com.cooksys.twitterAPI.mappers.HashtagMapper;
 import com.cooksys.twitterAPI.mappers.TweetMapper;
 import com.cooksys.twitterAPI.mappers.UserMapper;
+import com.cooksys.twitterAPI.repositories.HashtagRepository;
 import com.cooksys.twitterAPI.repositories.TweetRepository;
 import com.cooksys.twitterAPI.repositories.UserRepository;
 import com.cooksys.twitterAPI.services.TweetService;
@@ -34,6 +36,8 @@ public class TweetServiceImpl implements TweetService {
     private TweetRepository tweetRepository;
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    private HashtagRepository hashtagRepository;
     @Autowired
     private TweetMapper tweetMapper;
     @Autowired
@@ -222,6 +226,7 @@ public class TweetServiceImpl implements TweetService {
         return tweetMapper.entityToDto(potentialTweet.get());
     }
 
+    // POST - NEW TWEET
     @Override
     public TweetResponseDto createTweet(TweetRequestDto tweetRequestDto) {
         if (tweetRequestDto.getContent() == null) {
@@ -238,8 +243,6 @@ public class TweetServiceImpl implements TweetService {
         Tweet tweetToCreate = tweetMapper.requestDtoToEntity(tweetRequestDto);
         tweetToCreate.setAuthor(validUser);
 
-        // work on the tweet content
-        // getContent()
         String content = tweetToCreate.getContent();
         // tweet with mentions needs a list of mentioned users
         if (content.contains("@")) {
@@ -257,21 +260,22 @@ public class TweetServiceImpl implements TweetService {
             // setMentionedUsers
            tweetToCreate.setMentionedUsers(mentionedUsers);
         }
-//        //process content for hashtags
-//        if (content.contains("#")) {
-//            List<Hashtag> mentionedHashtags = new ArrayList<>();
-//            // Create a pattern to match substrings between "#" symbols and spaces or end of string
-//            Pattern hashtagPattern = Pattern.compile("#(\\w+)(?:\\s|$)");
-//            Matcher matcher = hashtagPattern.matcher(content);
-//            while (matcher.find()) {
-//                String hashtagLabelFromContent = matcher.group(0);
-//                Hashtag hashtagToAdd = new Hashtag();
-//                hashtagToAdd.setLabel(hashtagLabelFromContent);
-//                mentionedHashtags.add(hashtagToAdd);
-//            }
-//            //set tweet's hashtags
-//            tweetToCreate.setHashtags(mentionedHashtags);
-//        }
+//        //tweet with hashtags needs to create those hashtags
+        if (content.contains("#")) {
+            List<Hashtag> mentionedHashtags = new ArrayList<>();
+            // Create a pattern to match substrings between "#" symbols and spaces or end of string
+            Pattern hashtagPattern = Pattern.compile("#(\\w+)(?:\\s|$)");
+            Matcher matcher = hashtagPattern.matcher(content);
+            while (matcher.find()) {
+                String hashtagLabelFromContent = matcher.group(0);
+                Hashtag hashtagToAdd = new Hashtag();
+                hashtagToAdd.setLabel(hashtagLabelFromContent);
+                hashtagRepository.saveAndFlush(hashtagToAdd);
+                mentionedHashtags.add(hashtagToAdd);
+            }
+            //set tweet's hashtags
+            tweetToCreate.setHashtags(mentionedHashtags);
+        }
 
         return tweetMapper.entityToDto(tweetRepository.saveAndFlush(tweetToCreate));
     }
