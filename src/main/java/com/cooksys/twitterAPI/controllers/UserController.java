@@ -60,4 +60,10 @@ public class UserController {
         return userService.getActiveFollowing(username);
     }
 
+    // GET - TWEETS THAT MENTION USERNAME
+    @GetMapping("/@{username}/mentions")
+    public List<TweetResponseDto> getTweetsMentioningUsername(@PathVariable String username) {
+        return userService.getTweetsMentioningUsername(username);
+    }
+
 }

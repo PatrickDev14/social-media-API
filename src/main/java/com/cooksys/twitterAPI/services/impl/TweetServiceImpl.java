@@ -1,5 +1,6 @@
 package com.cooksys.twitterAPI.services.impl;
 
+import com.cooksys.twitterAPI.dtos.CredentialsDto;
 import com.cooksys.twitterAPI.dtos.TweetRequestDto;
 import com.cooksys.twitterAPI.dtos.TweetResponseDto;
 import com.cooksys.twitterAPI.dtos.UserResponseDto;
@@ -24,6 +25,8 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Service
 @RequiredArgsConstructor
@@ -39,6 +42,8 @@ public class TweetServiceImpl implements TweetService {
     private CredentialsMapper credentialsMapper;
     @Autowired
     private UserMapper userMapper;
+    @Autowired
+    private UserServiceImpl userServiceImpl;
 
     //HELPER METHOD TO GET USER MY CREDENTIALS
     private User getUserByCredentials(Credentials credentials) {
@@ -146,7 +151,7 @@ public class TweetServiceImpl implements TweetService {
      */
     @Override
     public TweetResponseDto createTweet(TweetRequestDto tweetRequestDto) {
-        if (tweetRequestDto.getContent().isEmpty()) {
+        if (tweetRequestDto.getContent() == null) {
             throw new BadRequestException("A new tweet requires content");
         }
 
@@ -160,11 +165,78 @@ public class TweetServiceImpl implements TweetService {
         Tweet tweetToCreate = tweetMapper.requestDtoToEntity(tweetRequestDto);
         tweetToCreate.setAuthor(validUser);
 
+        // work on the tweet content
+        // getContent()
+        String content = tweetToCreate.getContent();
+        // tweet with mentions needs a list of mentioned users
+        if (content.contains("@")) {
+            List<User> mentionedUsers = new ArrayList<>();
+            // Create a pattern to match substrings between "@" symbols and spaces or end of string
+            Pattern mentionedPattern = Pattern.compile("@(\\w+)(?:\\s|$)");
+            Matcher matcher = mentionedPattern.matcher(content);
+            while (matcher.find()) {
+                // matcher.group(1) moves 1 to the right of the @ symbol, excluding it
+                String usernameFromContent = matcher.group(1);
+                // check if username matches existing user and get the user
+                User mentionedUser = userServiceImpl.getUserEntity(usernameFromContent);
+                mentionedUsers.add(mentionedUser);
+            }
+            // setMentionedUsers
+           tweetToCreate.setMentionedUsers(mentionedUsers);
+        }
+//        //process content for hashtags
+//        if (content.contains("#")) {
+//            List<Hashtag> mentionedHashtags = new ArrayList<>();
+//            // Create a pattern to match substrings between "#" symbols and spaces or end of string
+//            Pattern hashtagPattern = Pattern.compile("#(\\w+)(?:\\s|$)");
+//            Matcher matcher = hashtagPattern.matcher(content);
+//            while (matcher.find()) {
+//                String hashtagLabelFromContent = matcher.group(0);
+//                Hashtag hashtagToAdd = new Hashtag();
+//                hashtagToAdd.setLabel(hashtagLabelFromContent);
+//                mentionedHashtags.add(hashtagToAdd);
+//            }
+//            //set tweet's hashtags
+//            tweetToCreate.setHashtags(mentionedHashtags);
+//        }
+
         return tweetMapper.entityToDto(tweetRepository.saveAndFlush(tweetToCreate));
     }
-
 
     // Creates a "like" relationship between the tweet with the given id and the user whose credentials are provided by the request body.
     // If the tweet is deleted or otherwise doesn't exist, or if the given credentials do not match an active user in the database,
     // an error should be sent. Following successful completion of the operation, no response body is sent.
+    // POST - CREATE A TWEET LIKE
+    @Override
+    public void createATweetLike(Long id, CredentialsDto credentialsDto) {
+        // check if tweet exists and is not deleted
+        Tweet tweet = tweetRepository.findByIdAndDeletedFalse(id)
+                .orElseThrow(() -> new NotFoundException("Tweet not found"));
+        // check if user credentials exist and user is not deleted
+        Credentials credentials = credentialsMapper.dtoToEntity(credentialsDto);
+        User user = userRepository.findByCredentialsAndDeletedFalse(credentials)
+                .orElseThrow(() -> new NotFoundException("User not found"));
+
+        user.getLikedTweets().add(tweet);
+        userRepository.saveAndFlush(user);
+        tweet.getLikedByUsers().add(user);
+        tweetRepository.saveAndFlush(tweet);
+    }
+
+    // DELETE - TWEET BY ID
+    @Override
+    public TweetResponseDto softDeleteTweet(Long id, CredentialsDto credentialsDto) {
+        // check if tweet exists and is not deleted
+        Tweet tweetToDelete = tweetRepository.findByIdAndDeletedFalse(id)
+                .orElseThrow(() -> new NotFoundException("Tweet not found"));
+        // check if user credentials exist and user is not deleted
+        Credentials credentials = credentialsMapper.dtoToEntity(credentialsDto);
+        User user = userRepository.findByCredentialsAndDeletedFalse(credentials)
+                .orElseThrow(() -> new NotFoundException("User not found"));
+
+        tweetToDelete.setDeleted(true);
+        return tweetMapper.entityToDto(tweetRepository.saveAndFlush(tweetToDelete));
+    }
+
+
 }

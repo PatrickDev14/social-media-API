@@ -1,5 +1,6 @@
 package com.cooksys.twitterAPI.controllers;
 
+import com.cooksys.twitterAPI.dtos.CredentialsDto;
 import com.cooksys.twitterAPI.dtos.TweetRequestDto;
 import com.cooksys.twitterAPI.dtos.TweetResponseDto;
 import com.cooksys.twitterAPI.dtos.UserResponseDto;
@@ -52,5 +53,17 @@ public class TweetController {
     @ResponseStatus(HttpStatus.CREATED)
     public TweetResponseDto createTweet(@RequestBody TweetRequestDto tweetRequestDto) {
         return tweetService.createTweet(tweetRequestDto);
+    }
+
+    // POST - CREATE A TWEET LIKE
+    @PostMapping("/{id}/like")
+    public void createATweetLike(@PathVariable Long id, @RequestBody CredentialsDto credentialsDto) {
+        tweetService.createATweetLike(id, credentialsDto);
+    }
+
+    // DELETE - TWEET BY ID
+    @DeleteMapping("/{id}")
+    public TweetResponseDto softDeleteTweet(@PathVariable Long id, @RequestBody CredentialsDto credentialsDto) {
+        return tweetService.softDeleteTweet(id, credentialsDto);
     }
 }

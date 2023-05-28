@@ -19,10 +19,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -42,7 +39,7 @@ public class UserServiceImpl implements UserService {
     private final ValidateServiceImpl validateServiceImpl;
 
     //HELPER METHOD TO CHECK IF USER EXISTS
-    private User getUserEntity(String username) throws NotFoundException {
+    public User getUserEntity(String username) throws NotFoundException {
         Optional<User> optionalUser = userRepository.findByCredentialsUsernameAndDeletedFalse(username);
         if (!validateServiceImpl.usernameExists(username)
                 || userRepository.findByCredentialsUsernameAndDeletedFalse(username).isEmpty()
@@ -157,6 +154,13 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserResponseDto createOrReactivateUser(UserRequestDto userRequestDto) {
+
+        if (userRequestDto.getCredentials() == null && userRequestDto.getProfile() == null) {
+            throw new BadRequestException("the user request is empty");
+        }
+        if (userRequestDto.getCredentials() == null || userRequestDto.getProfile() == null) {
+            throw new BadRequestException("the user request is incomplete");
+        }
         if (userRequestDto.getCredentials().getUsername() == null) {
             throw new BadRequestException("a username is required");
         }
@@ -165,9 +169,6 @@ public class UserServiceImpl implements UserService {
         }
         if (userRequestDto.getProfile().getEmail() == null) {
             throw new BadRequestException("an email is required");
-        }
-        if (userRequestDto.getCredentials() == null) {
-            throw new BadRequestException("credentials are required");
         }
 
         User userToCreateOrReactivate;
@@ -196,7 +197,7 @@ public class UserServiceImpl implements UserService {
 //            throw new NotFoundException("User not found with username: " + username);
 //        }
         User user = getUserEntity(username);
-        List<User> followers = user.getFollowers();
+        List<User> followers = new ArrayList<>(user.getFollowers());
         followers.removeIf(User::isDeleted);
 
         return userMapper.entitiesToDtos(followers);
@@ -209,6 +210,16 @@ public class UserServiceImpl implements UserService {
         following.removeIf(User::isDeleted);
 
         return userMapper.entitiesToDtos(following);
+    }
+
+    @Override
+    public List<TweetResponseDto> getTweetsMentioningUsername(String username) {
+        User user = getUserEntity(username);
+        List<Tweet> mentioningTweets = new ArrayList<>(user.getMentionedTweets());
+        mentioningTweets.removeIf(Tweet::isDeleted);
+        mentioningTweets.sort(Comparator.comparing(Tweet::getPosted, Comparator.reverseOrder()));
+
+        return tweetMapper.entitiesToDtos(mentioningTweets);
     }
 
 
