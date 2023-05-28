@@ -1,27 +1,33 @@
 package com.cooksys.twitterAPI.services;
 
-import com.cooksys.twitterAPI.dtos.CredentialsDto;
-import com.cooksys.twitterAPI.dtos.TweetRequestDto;
-import com.cooksys.twitterAPI.dtos.TweetResponseDto;
-import com.cooksys.twitterAPI.dtos.UserResponseDto;
+import com.cooksys.twitterAPI.dtos.*;
 
 import java.util.List;
 
 public interface TweetService {
-    TweetResponseDto replyToTweet(TweetRequestDto tweetRequestDto, Long id);
+	TweetResponseDto replyToTweet(TweetRequestDto tweetRequestDto, Long id);
 
-    List<TweetResponseDto> getReposts(Long id);
+	List<TweetResponseDto> getReposts(Long id);
 
-    List<UserResponseDto> getMentions(Long id);
+	List<UserResponseDto> getMentions(Long id);
 
-    List<TweetResponseDto> getAllSavedTweets();
+	List<TweetResponseDto> getReplies(Long id);
 
-    TweetResponseDto getTweet(Long id);
+	TweetResponseDto repostTweet(CredentialsDto credentialsDto, Long id);
 
-    TweetResponseDto createTweet(TweetRequestDto tweetRequestDtoDto);
+  void createATweetLike(Long id, CredentialsDto credentialsDto);
 
+  TweetResponseDto softDeleteTweet(Long id, CredentialsDto credentialsDto);
+  
+	ContextDto getContext(Long id);
 
-    void createATweetLike(Long id, CredentialsDto credentialsDto);
+	List<UserResponseDto> getLikes(Long id);
 
-    TweetResponseDto softDeleteTweet(Long id, CredentialsDto credentialsDto);
+	List<HashtagDto> getHashtags(Long id);
+
+	TweetResponseDto createTweet(TweetRequestDto tweetRequestDto);
+
+	TweetResponseDto getTweet(Long id);
+
+	List<TweetResponseDto> getAllSavedTweets();
 }
