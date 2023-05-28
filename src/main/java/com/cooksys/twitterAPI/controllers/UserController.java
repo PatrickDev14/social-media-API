@@ -66,11 +66,11 @@ public class UserController {
         return userService.getTweetsMentioningUsername(username);
     }
 
-    // GET USER MENTIONS
-    @GetMapping("/@{username}/mentions")
-    public List<TweetResponseDto> getMentions(@PathVariable String username) {
-        return userService.getUserMentions(username);
-    }
+//    // GET USER MENTIONS
+//    @GetMapping("/@{username}/mentions")
+//    public List<TweetResponseDto> getMentions(@PathVariable String username) {
+//        return userService.getUserMentions(username);
+//    }
 
     // DELETE A USER
     @DeleteMapping("/@{username}")

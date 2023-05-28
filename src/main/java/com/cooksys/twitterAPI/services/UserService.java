@@ -18,13 +18,13 @@ public interface UserService {
 
 	List<TweetResponseDto> getFeed(String username);
 
-	List<TweetResponseDto> getUserMentions(String username);
+//	List<TweetResponseDto> getUserMentions(String username);
 
 	UserResponseDto deleteUser(String username, CredentialsDto credentialsDto);
 
-  List<UserResponseDto> getActiveFollowing(String username);
+	List<UserResponseDto> getActiveFollowing(String username);
 
-  List<TweetResponseDto> getTweetsMentioningUsername(String username);
+	List<TweetResponseDto> getTweetsMentioningUsername(String username);
 
 	UserResponseDto updateUser(String username, UserRequestDto userRequestDto);
 
@@ -34,5 +34,4 @@ public interface UserService {
 
 	List<UserResponseDto> getActiveFollowers(String username);
 
-	List<UserResponseDto> getActiveFollowing(String username);
 }

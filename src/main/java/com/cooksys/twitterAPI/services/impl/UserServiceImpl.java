@@ -39,7 +39,7 @@ public class UserServiceImpl implements UserService {
 	private final ValidateServiceImpl validateServiceImpl;
 
 	// HELPER METHOD TO CHECK IF USER EXISTS
-	private User getUserEntity(String username) throws NotFoundException {
+	public User getUserEntity(String username) throws NotFoundException {
 		Optional<User> optionalUser = userRepository.findByCredentialsUsernameAndDeletedFalse(username);
 		if (!validateServiceImpl.usernameExists(username)
 				|| userRepository.findByCredentialsUsernameAndDeletedFalse(username).isEmpty()
@@ -136,75 +136,75 @@ public class UserServiceImpl implements UserService {
 		return feedReversed;
 	}
   
-  public User getCredentialedUser(UserRequestDto userRequestDto) {
-      User validatingUser = userMapper.requestDtoToEntity(userRequestDto);
-      String validatingUsername = validatingUser.getCredentials().getUsername();
-      String validatingPassword = validatingUser.getCredentials().getPassword();
-      for (User u : userRepository.findAll()) {
-          if (Objects.equals(u.getCredentials().getUsername(), validatingUsername)
-                  && Objects.equals(u.getCredentials().getPassword(), validatingPassword)) {
+	  public User getCredentialedUser(UserRequestDto userRequestDto) {
+		  User validatingUser = userMapper.requestDtoToEntity(userRequestDto);
+		  String validatingUsername = validatingUser.getCredentials().getUsername();
+		  String validatingPassword = validatingUser.getCredentials().getPassword();
+		  for (User u : userRepository.findAll()) {
+			  if (Objects.equals(u.getCredentials().getUsername(), validatingUsername)
+					  && Objects.equals(u.getCredentials().getPassword(), validatingPassword)) {
 
-              return u;
-          }
-      }
+				  return u;
+			  }
+		  }
 
-      return null;
-  }
+		  return null;
+	  }
 
-  @Override
-  public UserResponseDto createOrReactivateUser(UserRequestDto userRequestDto) {
+	  @Override
+	  public UserResponseDto createOrReactivateUser(UserRequestDto userRequestDto) {
 
-      if (userRequestDto.getCredentials() == null && userRequestDto.getProfile() == null) {
-          throw new BadRequestException("the user request is empty");
-      }
-      if (userRequestDto.getCredentials() == null || userRequestDto.getProfile() == null) {
-          throw new BadRequestException("the user request is incomplete");
-      }
-      if (userRequestDto.getCredentials().getUsername() == null) {
-          throw new BadRequestException("a username is required");
-      }
-      if (userRequestDto.getCredentials().getPassword() == null) {
-          throw new BadRequestException("a password is required");
-      }
-      if (userRequestDto.getProfile().getEmail() == null) {
-          throw new BadRequestException("an email is required");
-      }
+		  if (userRequestDto.getCredentials() == null && userRequestDto.getProfile() == null) {
+			  throw new BadRequestException("the user request is empty");
+		  }
+		  if (userRequestDto.getCredentials() == null || userRequestDto.getProfile() == null) {
+			  throw new BadRequestException("the user request is incomplete");
+		  }
+		  if (userRequestDto.getCredentials().getUsername() == null) {
+			  throw new BadRequestException("a username is required");
+		  }
+		  if (userRequestDto.getCredentials().getPassword() == null) {
+			  throw new BadRequestException("a password is required");
+		  }
+		  if (userRequestDto.getProfile().getEmail() == null) {
+			  throw new BadRequestException("an email is required");
+		  }
 
-      User userToCreateOrReactivate;
-      userToCreateOrReactivate = getCredentialedUser(userRequestDto);
-      // user already exists
-      if (userToCreateOrReactivate != null) {
-          // reactivate a user who isDeleted()
-          if (userToCreateOrReactivate.isDeleted()) {
-              userToCreateOrReactivate.setDeleted(false);
-          } else {
-              //user has an active account already
-              throw new BadRequestException("user has an active account");
-          }
-      } else {
-          //user doesn't exist yet
-          userToCreateOrReactivate = userMapper.requestDtoToEntity(userRequestDto);
-      }
+		  User userToCreateOrReactivate;
+		  userToCreateOrReactivate = getCredentialedUser(userRequestDto);
+		  // user already exists
+		  if (userToCreateOrReactivate != null) {
+			  // reactivate a user who isDeleted()
+			  if (userToCreateOrReactivate.isDeleted()) {
+				  userToCreateOrReactivate.setDeleted(false);
+			  } else {
+				  //user has an active account already
+				  throw new BadRequestException("user has an active account");
+			  }
+		  } else {
+			  //user doesn't exist yet
+			  userToCreateOrReactivate = userMapper.requestDtoToEntity(userRequestDto);
+		  }
 
-      return userMapper.entityToDto(userRepository.saveAndFlush(userToCreateOrReactivate));
-  }
+		  return userMapper.entityToDto(userRepository.saveAndFlush(userToCreateOrReactivate));
+	  }
 
-	// GET - USER MENTIONS
-	@Override
-	public List<TweetResponseDto> getUserMentions(String username) {
-		User user = getUserEntity(username);
-		List<TweetResponseDto> tweetDtoList = new ArrayList<>();
-		for (Tweet tweet : user.getMentionedTweets()) {
-			if (tweet.isDeleted() == false) {
-				String usernameDto = tweet.getAuthor().getCredentials().getUsername();
-				TweetResponseDto tweetDto = tweetMapper.entityToDto(tweet);
-				tweetDto.getAuthor().setUsername(usernameDto);
-				tweetDtoList.add(tweetDto);
-			}
-		}
-
-		return tweetDtoList;
-	}
+//	// GET - USER MENTIONS
+//	@Override
+//	public List<TweetResponseDto> getUserMentions(String username) {
+//		User user = getUserEntity(username);
+//		List<TweetResponseDto> tweetDtoList = new ArrayList<>();
+//		for (Tweet tweet : user.getMentionedTweets()) {
+//			if (tweet.isDeleted() == false) {
+//				String usernameDto = tweet.getAuthor().getCredentials().getUsername();
+//				TweetResponseDto tweetDto = tweetMapper.entityToDto(tweet);
+//				tweetDto.getAuthor().setUsername(usernameDto);
+//				tweetDtoList.add(tweetDto);
+//			}
+//		}
+//
+//		return tweetDtoList;
+//	}
 
 	// DELETE USER
 	@Override
