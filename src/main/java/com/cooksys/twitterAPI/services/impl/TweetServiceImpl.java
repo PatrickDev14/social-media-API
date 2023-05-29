@@ -46,6 +46,7 @@ public class TweetServiceImpl implements TweetService {
     private UserMapper userMapper;
     @Autowired
     private UserServiceImpl userServiceImpl;
+    @Autowired
     private HashtagMapper hashtagMapper;
 
     //HELPER METHOD TO GET USER MY CREDENTIALS

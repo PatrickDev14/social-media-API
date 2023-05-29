@@ -90,4 +90,10 @@ public class UserController {
         return userService.getUserByUsername(username);
     }
 
+    //GET USER TWEETS
+    @GetMapping("/@{username}/tweets")
+    public List<TweetResponseDto> getTweets(@PathVariable String username) {
+        return userService.getTweets(username);
+    }
+
 }
