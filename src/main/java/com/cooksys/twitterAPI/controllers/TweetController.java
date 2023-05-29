@@ -88,6 +88,7 @@ public class TweetController {
         return tweetService.repostTweet(credentialsDto, id);
     }
 
+    //GET REPLIES
     @GetMapping("/{id}/replies")
     public List<TweetResponseDto> getReplies(@PathVariable Long id) {
         return tweetService.getReplies(id);

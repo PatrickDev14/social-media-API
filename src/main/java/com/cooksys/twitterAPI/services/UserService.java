@@ -34,4 +34,5 @@ public interface UserService {
 
 	List<UserResponseDto> getActiveFollowers(String username);
 
+    List<TweetResponseDto> getTweets(String username);
 }
