@@ -13,6 +13,7 @@ import com.cooksys.twitterAPI.services.HashtagService;
 
 import lombok.RequiredArgsConstructor;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -23,13 +24,20 @@ public class HashtagServiceImpl implements HashtagService {
 	private final HashtagRepository hashtagRepository;
 	@Autowired
 	private final TweetMapper tweetMapper;
+	@Autowired
 	private final HashtagMapper hashtagMapper;
 
 	// GET - ALL TWEETS BY HASHTAG
 	@Override
 	public List<TweetResponseDto> getAllTweetsByHashtag(String label) {
 		Optional<Hashtag> hashtagByLabel = hashtagRepository.findHashtagByLabel(label);
-		return tweetMapper.entitiesToDtos(hashtagByLabel.get().getTweets());
+
+		if (hashtagByLabel.isPresent()) {
+			Hashtag hashtag = hashtagByLabel.get();
+			return tweetMapper.entitiesToDtos(hashtag.getTweets());
+		} else {
+			return Collections.emptyList();
+		}
 	}
 
 	// GET ALL HASHTAGS

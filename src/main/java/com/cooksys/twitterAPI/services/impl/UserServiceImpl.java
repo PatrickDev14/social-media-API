@@ -278,4 +278,23 @@ public class UserServiceImpl implements UserService {
       return tweetMapper.entitiesToDtos(mentioningTweets);
   }
 
+	//GET USER TWEETS
+	@Override
+	public List<TweetResponseDto> getTweets(String username) {
+
+		List<TweetResponseDto> tweetResponseDtoList = new ArrayList<>();
+
+		User user = getUserEntity(username);
+		for (Tweet tweet : user.getTweets()) {
+			if (tweet.isDeleted() == false) {
+				tweetResponseDtoList.add(tweetMapper.entityToDto(tweet));
+			}
+		}
+
+		for (TweetResponseDto tweetResponseDto : tweetResponseDtoList) {
+			tweetResponseDto.getAuthor().setUsername(username);
+		}
+		return tweetResponseDtoList;
+	}
+
 }
