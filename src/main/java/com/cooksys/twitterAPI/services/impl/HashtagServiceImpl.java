@@ -23,6 +23,7 @@ public class HashtagServiceImpl implements HashtagService {
 	private final HashtagRepository hashtagRepository;
 	@Autowired
 	private final TweetMapper tweetMapper;
+	@Autowired
 	private final HashtagMapper hashtagMapper;
 
 	// GET - ALL TWEETS BY HASHTAG

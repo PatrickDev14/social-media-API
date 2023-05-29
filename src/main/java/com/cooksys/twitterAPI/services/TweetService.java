@@ -30,4 +30,5 @@ public interface TweetService {
 	TweetResponseDto getTweet(Long id);
 
 	List<TweetResponseDto> getAllSavedTweets();
+
 }
