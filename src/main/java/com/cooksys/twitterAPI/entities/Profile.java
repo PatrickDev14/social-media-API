@@ -1,6 +1,5 @@
 package com.cooksys.twitterAPI.entities;
 
-import jakarta.annotation.Nullable;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import lombok.Data;
@@ -15,7 +14,7 @@ public class Profile {
 
 	private String lastName;
 
-	@Nullable
+	@Column(nullable = false)
 	private String email;
 
 	private String phone;

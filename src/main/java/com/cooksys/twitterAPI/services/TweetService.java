@@ -15,9 +15,9 @@ public interface TweetService {
 
 	TweetResponseDto repostTweet(CredentialsDto credentialsDto, Long id);
 
-  void createATweetLike(Long id, CredentialsDto credentialsDto);
+	void createATweetLike(Long id, CredentialsDto credentialsDto);
 
-  TweetResponseDto softDeleteTweet(Long id, CredentialsDto credentialsDto);
+	TweetResponseDto softDeleteTweet(Long id, CredentialsDto credentialsDto);
   
 	ContextDto getContext(Long id);
 
@@ -30,4 +30,5 @@ public interface TweetService {
 	TweetResponseDto getTweet(Long id);
 
 	List<TweetResponseDto> getAllSavedTweets();
+
 }

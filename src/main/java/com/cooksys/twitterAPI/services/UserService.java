@@ -18,8 +18,6 @@ public interface UserService {
 
 	List<TweetResponseDto> getFeed(String username);
 
-//	List<TweetResponseDto> getUserMentions(String username);
-
 	UserResponseDto deleteUser(String username, CredentialsDto credentialsDto);
 
 	List<UserResponseDto> getActiveFollowing(String username);

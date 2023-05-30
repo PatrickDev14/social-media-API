@@ -16,7 +16,6 @@ public class ValidateServiceImpl implements ValidateService {
 
     @Autowired
     private UserRepository userRepository;
-
     @Autowired
     private HashtagRepository hashtagRepository;
 

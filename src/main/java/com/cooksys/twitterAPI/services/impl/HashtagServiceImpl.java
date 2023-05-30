@@ -3,17 +3,15 @@ package com.cooksys.twitterAPI.services.impl;
 import com.cooksys.twitterAPI.dtos.HashtagDto;
 import com.cooksys.twitterAPI.dtos.TweetResponseDto;
 import com.cooksys.twitterAPI.entities.Hashtag;
+import com.cooksys.twitterAPI.exceptions.NotFoundException;
 import com.cooksys.twitterAPI.mappers.HashtagMapper;
 import com.cooksys.twitterAPI.mappers.TweetMapper;
 import com.cooksys.twitterAPI.repositories.HashtagRepository;
+import com.cooksys.twitterAPI.services.HashtagService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.cooksys.twitterAPI.services.HashtagService;
-
-import lombok.RequiredArgsConstructor;
-
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -36,7 +34,8 @@ public class HashtagServiceImpl implements HashtagService {
 			Hashtag hashtag = hashtagByLabel.get();
 			return tweetMapper.entitiesToDtos(hashtag.getTweets());
 		} else {
-			return Collections.emptyList();
+			throw new NotFoundException("label does not exist");
+//			return Collections.emptyList();
 		}
 	}
 
