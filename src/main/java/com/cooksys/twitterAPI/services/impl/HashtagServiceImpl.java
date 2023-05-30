@@ -3,6 +3,7 @@ package com.cooksys.twitterAPI.services.impl;
 import com.cooksys.twitterAPI.dtos.HashtagDto;
 import com.cooksys.twitterAPI.dtos.TweetResponseDto;
 import com.cooksys.twitterAPI.entities.Hashtag;
+import com.cooksys.twitterAPI.exceptions.NotFoundException;
 import com.cooksys.twitterAPI.mappers.HashtagMapper;
 import com.cooksys.twitterAPI.mappers.TweetMapper;
 import com.cooksys.twitterAPI.repositories.HashtagRepository;
@@ -28,7 +29,14 @@ public class HashtagServiceImpl implements HashtagService {
 	@Override
 	public List<TweetResponseDto> getAllTweetsByHashtag(String label) {
 		Optional<Hashtag> hashtagByLabel = hashtagRepository.findHashtagByLabel(label);
-		return tweetMapper.entitiesToDtos(hashtagByLabel.get().getTweets());
+
+		if (hashtagByLabel.isPresent()) {
+			Hashtag hashtag = hashtagByLabel.get();
+			return tweetMapper.entitiesToDtos(hashtag.getTweets());
+		} else {
+			throw new NotFoundException("label does not exist");
+//			return Collections.emptyList();
+		}
 	}
 
 	// GET ALL HASHTAGS

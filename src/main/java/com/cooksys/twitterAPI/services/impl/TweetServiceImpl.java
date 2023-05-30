@@ -21,10 +21,7 @@ import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -176,9 +173,21 @@ public class TweetServiceImpl implements TweetService {
     // GET LIKES
     @Override
     public List<UserResponseDto> getLikes(Long id) {
+        // check if tweet exists and is not deleted
+        if (tweetRepository.findByIdAndDeletedFalse(id).isEmpty()) {
+            throw new NotFoundException("Tweet not found");
+        }
         List<User> tweetLikes = getTweetById(id).getLikedByUsers();
+
+        if (tweetLikes.size() > 1) {
+            // Remove any duplicate users from the list
+            Set<User> uniqueLikes = new HashSet<>(tweetLikes);
+            tweetLikes = new ArrayList<>(uniqueLikes);
+        }
+
         return userMapper.entitiesToDtos(tweetLikes);
     }
+
 
     // GET TWEET TAGS
     @Override
@@ -212,11 +221,7 @@ public class TweetServiceImpl implements TweetService {
         return tweetMapper.entitiesToDtos(foundTweets);
     }
 
-    /* GET tweets/{id}
-     *  Retrieves a tweet with a given id. If no such tweet exists, or the given tweet is deleted, an error should be sent
-     * in lieu of a response.
-     */  
- 
+    // GET - tweets by id
     @Override
     public TweetResponseDto getTweet(Long id) {
         Optional<Tweet> potentialTweet = tweetRepository.findById(id);
@@ -261,14 +266,14 @@ public class TweetServiceImpl implements TweetService {
             // setMentionedUsers
            tweetToCreate.setMentionedUsers(mentionedUsers);
         }
-//        //tweet with hashtags needs to create those hashtags
+        //tweet with hashtags needs to create those hashtags
         if (content.contains("#")) {
             List<Hashtag> mentionedHashtags = new ArrayList<>();
             // Create a pattern to match substrings between "#" symbols and spaces or end of string
             Pattern hashtagPattern = Pattern.compile("#(\\w+)(?:\\s|$)");
             Matcher matcher = hashtagPattern.matcher(content);
             while (matcher.find()) {
-                String hashtagLabelFromContent = matcher.group(0);
+                String hashtagLabelFromContent = matcher.group(1);   // was 0
                 Hashtag hashtagToAdd = new Hashtag();
                 hashtagToAdd.setLabel(hashtagLabelFromContent);
                 hashtagRepository.saveAndFlush(hashtagToAdd);
@@ -281,9 +286,6 @@ public class TweetServiceImpl implements TweetService {
         return tweetMapper.entityToDto(tweetRepository.saveAndFlush(tweetToCreate));
     }
 
-    // Creates a "like" relationship between the tweet with the given id and the user whose credentials are provided by the request body.
-    // If the tweet is deleted or otherwise doesn't exist, or if the given credentials do not match an active user in the database,
-    // an error should be sent. Following successful completion of the operation, no response body is sent.
     // POST - CREATE A TWEET LIKE
     @Override
     public void createATweetLike(Long id, CredentialsDto credentialsDto) {
@@ -295,6 +297,9 @@ public class TweetServiceImpl implements TweetService {
         User user = userRepository.findByCredentialsAndDeletedFalse(credentials)
                 .orElseThrow(() -> new NotFoundException("User not found"));
 
+//        if (user.getLikedTweets().contains(tweet)) {
+//            throw new BadRequestException("user has already liked the tweet");
+//        }
         user.getLikedTweets().add(tweet);
         userRepository.saveAndFlush(user);
         tweet.getLikedByUsers().add(user);
